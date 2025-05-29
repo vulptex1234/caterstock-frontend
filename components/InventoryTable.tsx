@@ -7,7 +7,7 @@ import {
   StatusLevel,
 } from '@/lib/api';
 import { formatDateTime, getStatusColor, getStatusText } from '@/lib/utils';
-import { RefreshCw, Filter } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 

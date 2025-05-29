@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import {
   inventoryAPI,
   InventoryStatus,
-  Item,
   ItemCategory,
   InventoryType,
   StatusLevel,
