@@ -25,7 +25,6 @@ type FilterType = 'all' | 'supplies' | 'food' | 'equipment' | 'low' | 'high';
 
 export default function MobilePage() {
   const [inventoryData, setInventoryData] = useState<InventoryStatus[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterType>('all');
@@ -38,13 +37,10 @@ export default function MobilePage() {
       const token = Cookies.get('access_token');
       const isDemo = token === 'demo-token';
 
-      const [inventoryResponse, itemsResponse] = await Promise.all([
-        isDemo ? inventoryAPI.getStatusTest() : inventoryAPI.getStatus(),
-        isDemo ? inventoryAPI.getItemsTest() : inventoryAPI.getItems(),
-      ]);
-
+      const inventoryResponse = await (isDemo
+        ? inventoryAPI.getStatusTest()
+        : inventoryAPI.getStatus());
       setInventoryData(inventoryResponse.data);
-      setItems(itemsResponse.data);
       setError(null);
     } catch (err) {
       console.error('Failed to fetch data:', err);
