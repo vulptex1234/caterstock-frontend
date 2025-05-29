@@ -367,7 +367,7 @@ export default function MobilePage() {
                     variant="outline"
                     className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
                   >
-                    この項目を更新
+                    この項目を更新する
                   </Button>
                 </div>
               ))
