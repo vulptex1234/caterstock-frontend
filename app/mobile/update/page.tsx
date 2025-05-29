@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   inventoryAPI,
@@ -12,7 +12,7 @@ import {
 import { ArrowLeft, Package, CheckCircle } from 'lucide-react';
 import Cookies from 'js-cookie';
 
-export default function MobileUpdatePage() {
+function MobileUpdateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [items, setItems] = useState<Item[]>([]);
@@ -429,5 +429,22 @@ export default function MobileUpdatePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MobileUpdatePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">読み込み中...</p>
+          </div>
+        </div>
+      }
+    >
+      <MobileUpdateContent />
+    </Suspense>
   );
 }
