@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { authAPI } from '@/lib/api';
 import { Package } from 'lucide-react';
 import Cookies from 'js-cookie';
 
