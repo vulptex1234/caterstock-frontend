@@ -20,21 +20,6 @@ function AuthCallbackContent() {
       try {
         const code = searchParams.get('code');
         const state = searchParams.get('state');
-        const token = searchParams.get('token');
-
-        if (token) {
-          // トークンが既にクエリパラメータにある場合（バックエンドからのリダイレクト）
-          Cookies.set('access_token', token, {
-            expires: 7,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-          });
-          setStatus('success');
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 1000);
-          return;
-        }
 
         if (!code) {
           setError('認証コードが見つかりません');
@@ -43,24 +28,24 @@ function AuthCallbackContent() {
         }
 
         // バックエンドのコールバックエンドポイントを呼び出し
-        const response = await fetch(
-          `${API_BASE_URL}/auth/line/callback?code=${code}${
-            state ? `&state=${state}` : ''
-          }`
-        );
+        const response = await fetch(`${API_BASE_URL}/auth/line/callback`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: code,
+            state: state || undefined,
+          }),
+        });
 
         if (!response.ok) {
           throw new Error('Authentication failed');
         }
 
-        // リダイレクトレスポンスを処理
-        const redirectUrl = response.url;
-        if (redirectUrl) {
-          window.location.href = redirectUrl;
-          return;
-        }
-
         const data = await response.json();
+
+        // トークンをCookieに保存
         Cookies.set('access_token', data.access_token, {
           expires: 7,
           secure: process.env.NODE_ENV === 'production',
