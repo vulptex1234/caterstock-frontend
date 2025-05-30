@@ -33,6 +33,7 @@ function AuthCallbackContent() {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             code: code,
             state: state || undefined,
@@ -40,7 +41,8 @@ function AuthCallbackContent() {
         });
 
         if (!response.ok) {
-          throw new Error('Authentication failed');
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Authentication failed');
         }
 
         const data = await response.json();
