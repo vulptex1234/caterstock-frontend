@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { authAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Package } from 'lucide-react';
 import Cookies from 'js-cookie';
