@@ -33,8 +33,8 @@ export default function DashboardPage() {
         isDemo ? inventoryAPI.getItemsTest() : inventoryAPI.getItems(),
       ]);
 
-      setInventoryData(inventoryResponse);
-      setItems(itemsResponse);
+      setInventoryData(inventoryResponse.data);
+      setItems(itemsResponse.data);
       setError(null);
     } catch (err) {
       console.error('Failed to fetch data:', err);

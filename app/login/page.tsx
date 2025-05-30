@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Package } from 'lucide-react';
 import Cookies from 'js-cookie';
-import { authAPI } from '@/lib/api';
+
+const API_BASE_URL = 'https://caterstock-backend.onrender.com/api/v1';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,8 +26,15 @@ export default function LoginPage() {
       setIsLoading(true);
       setError(null);
 
-      const { auth_url } = await authAPI.getLineAuthUrl();
-      window.location.href = auth_url;
+      // 直接fetchを使用してLINE認証URLを取得
+      const response = await fetch(`${API_BASE_URL}/auth/line/auth-url`);
+
+      if (!response.ok) {
+        throw new Error('認証URLの取得に失敗しました');
+      }
+
+      const data = await response.json();
+      window.location.href = data.auth_url;
     } catch (error) {
       console.error('Failed to get LINE auth URL:', error);
       setError('認証URLの取得に失敗しました。もう一度お試しください。');
