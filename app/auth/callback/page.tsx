@@ -6,6 +6,9 @@ import { authAPI } from '@/lib/api';
 import { Package } from 'lucide-react';
 import Cookies from 'js-cookie';
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,7 +31,7 @@ function AuthCallbackContent() {
 
         // バックエンドのコールバックエンドポイントを呼び出し
         const response = await fetch(
-          `/api/v1/auth/line/callback?code=${code}${
+          `${API_BASE_URL}/auth/line/callback?code=${code}${
             state ? `&state=${state}` : ''
           }`
         );
