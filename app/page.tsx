@@ -4,6 +4,19 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 
+// モバイルデバイスを検出する関数
+function isMobileDevice() {
+  if (typeof window === 'undefined') return false;
+
+  // UserAgentによる判定
+  const ua = navigator.userAgent;
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) ||
+    // 画面サイズによる判定（768px以下をモバイルとみなす）
+    window.innerWidth <= 768
+  );
+}
+
 export default function HomePage() {
   const router = useRouter();
 
@@ -12,8 +25,13 @@ export default function HomePage() {
     const token = Cookies.get('access_token');
 
     if (token) {
-      // トークンがある場合はダッシュボードにリダイレクト
-      router.push('/dashboard');
+      // モバイルデバイスの場合
+      if (isMobileDevice()) {
+        router.push('/mobile');
+      } else {
+        // デスクトップの場合
+        router.push('/dashboard');
+      }
     } else {
       // トークンがない場合はログインページにリダイレクト
       router.push('/login');
