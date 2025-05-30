@@ -20,6 +20,21 @@ function AuthCallbackContent() {
       try {
         const code = searchParams.get('code');
         const state = searchParams.get('state');
+        const token = searchParams.get('token');
+
+        if (token) {
+          // トークンが既にクエリパラメータにある場合（バックエンドからのリダイレクト）
+          Cookies.set('access_token', token, {
+            expires: 7,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+          });
+          setStatus('success');
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 1000);
+          return;
+        }
 
         if (!code) {
           setError('認証コードが見つかりません');
@@ -38,18 +53,21 @@ function AuthCallbackContent() {
           throw new Error('Authentication failed');
         }
 
-        const data = await response.json();
+        // リダイレクトレスポンスを処理
+        const redirectUrl = response.url;
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+          return;
+        }
 
-        // トークンをCookieに保存
+        const data = await response.json();
         Cookies.set('access_token', data.access_token, {
-          expires: 7, // 7日間有効
+          expires: 7,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
         });
 
         setStatus('success');
-
-        // 1秒後にダッシュボードにリダイレクト
         setTimeout(() => {
           router.push('/dashboard');
         }, 1000);
