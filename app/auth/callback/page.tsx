@@ -144,6 +144,8 @@ function AuthCallbackContent() {
             <button
               onClick={handleRetry}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+              id="retry-login-button"
+              name="retry-login-button"
             >
               ログインページに戻る
             </button>
