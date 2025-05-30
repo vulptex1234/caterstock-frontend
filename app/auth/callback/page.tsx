@@ -4,8 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Package } from 'lucide-react';
 import Cookies from 'js-cookie';
-
-const API_BASE_URL = 'https://caterstock-backend.onrender.com/api/v1';
+import { authAPI } from '@/lib/api';
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -28,24 +27,7 @@ function AuthCallbackContent() {
         }
 
         // バックエンドのコールバックエンドポイントを呼び出し
-        const response = await fetch(`${API_BASE_URL}/auth/line/callback`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            code: code,
-            state: state || undefined,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || 'Authentication failed');
-        }
-
-        const data = await response.json();
+        const data = await authAPI.lineCallback(code, state || undefined);
 
         // トークンをCookieに保存
         Cookies.set('access_token', data.access_token, {

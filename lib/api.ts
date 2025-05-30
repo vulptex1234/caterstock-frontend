@@ -1,8 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Axiosインスタンスを作成
 const api = axios.create({
@@ -29,7 +28,7 @@ api.interceptors.request.use(
 
 // レスポンスインターセプター（エラーハンドリング）
 api.interceptors.response.use(
-  (response) => response,
+  (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
       // 認証エラーの場合、トークンを削除してログインページにリダイレクト
@@ -41,29 +40,21 @@ api.interceptors.response.use(
 );
 
 // 型定義
-export interface User {
-  id: number;
-  name: string;
-  role: string;
-  line_id?: string;
-  last_login: string;
-}
-
 export enum ItemCategory {
-  SUPPLIES = 'supplies', // 量管理の備品
-  FOOD = 'food', // 量管理の食品
-  EQUIPMENT = 'equipment', // 個数管理
+  SUPPLIES = 'SUPPLIES',
+  FOOD = 'FOOD',
+  EQUIPMENT = 'EQUIPMENT',
 }
 
 export enum InventoryType {
-  QUANTITY_MANAGEMENT = 'quantity_management', // 量管理（3択）
-  COUNT_MANAGEMENT = 'count_management', // 個数管理（数値）
+  LEVEL = 'LEVEL',
+  COUNT = 'COUNT',
 }
 
 export enum StatusLevel {
-  HIGH = 'high', // 多い（過剰）
-  SUFFICIENT = 'sufficient', // 十分（正常）
-  LOW = 'low', // 少ない（不足）
+  LOW = 'LOW',
+  SUFFICIENT = 'SUFFICIENT',
+  HIGH = 'HIGH',
 }
 
 export interface Item {
@@ -78,22 +69,30 @@ export interface Item {
 
 export interface InventoryStatus {
   item: Item;
-  current_quantity?: number; // 個数管理のみ
-  current_status?: StatusLevel; // 量管理のみ
+  current_quantity?: number;
+  current_status?: StatusLevel;
   last_updated: string;
   updated_by_name: string;
-  status: 'normal' | 'low' | 'high'; // 統一ステータス
+  status: 'normal' | 'low' | 'high';
 }
 
 export interface InventoryLog {
   id: number;
   item_id: number;
-  quantity?: number; // 個数管理のみ
-  status_level?: StatusLevel; // 量管理のみ
+  quantity?: number;
+  status_level?: StatusLevel;
   updated_by: number;
   updated_at: string;
   item: Item;
   user: User;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  role: string;
+  line_id?: string;
+  last_login?: string;
 }
 
 export interface Token {
@@ -103,45 +102,43 @@ export interface Token {
 
 // API関数
 export const authAPI = {
-  getLineAuthUrl: () =>
-    api.get<{ auth_url: string }>('/api/v1/auth/line/auth-url'),
+  getLineAuthUrl: () => api.get<{ auth_url: string }>('/auth/line/auth-url'),
   lineCallback: (code: string, state?: string) =>
-    api.post<Token>('/api/v1/auth/line/callback', { code, state }),
+    api.post<Token>('/auth/line/callback', { code, state }),
 };
 
 export const inventoryAPI = {
-  getStatus: () => api.get<InventoryStatus[]>('/api/v1/inventory/status'),
+  getStatus: () => api.get<InventoryStatus[]>('/inventory/status'),
   updateQuantityManagement: (item_id: number, status_level: StatusLevel) =>
-    api.post<InventoryLog>('/api/v1/inventory/update/quantity', {
+    api.post<InventoryLog>('/inventory/update/quantity', {
       item_id,
       status_level,
     }),
   updateCountManagement: (item_id: number, quantity: number) =>
-    api.post<InventoryLog>('/api/v1/inventory/update/count', {
+    api.post<InventoryLog>('/inventory/update/count', {
       item_id,
       quantity,
     }),
   getHistory: (item_id?: number, limit = 100) =>
-    api.get<InventoryLog[]>('/api/v1/inventory/history', {
+    api.get<InventoryLog[]>('/inventory/history', {
       params: { item_id, limit },
     }),
-  getItems: () => api.get<Item[]>('/api/v1/inventory/items'),
+  getItems: () => api.get<Item[]>('/inventory/items'),
   getItemsByCategory: (category: ItemCategory) =>
-    api.get<Item[]>(`/api/v1/inventory/items/category/${category}`),
+    api.get<Item[]>(`/inventory/items/category/${category}`),
   createItem: (item: Omit<Item, 'id'>) =>
-    api.post<Item>('/api/v1/inventory/items', item),
+    api.post<Item>('/inventory/items', item),
 
   // 開発用：認証なしエンドポイント
-  getStatusTest: () =>
-    api.get<InventoryStatus[]>('/api/v1/inventory/status/test'),
-  getItemsTest: () => api.get<Item[]>('/api/v1/inventory/items/test'),
+  getStatusTest: () => api.get<InventoryStatus[]>('/inventory/status/test'),
+  getItemsTest: () => api.get<Item[]>('/inventory/items/test'),
   updateQuantityManagementTest: (item_id: number, status_level: StatusLevel) =>
-    api.post<InventoryLog>('/api/v1/inventory/update/quantity/test', {
+    api.post<InventoryLog>('/inventory/update/quantity/test', {
       item_id,
       status_level,
     }),
   updateCountManagementTest: (item_id: number, quantity: number) =>
-    api.post<InventoryLog>('/api/v1/inventory/update/count/test', {
+    api.post<InventoryLog>('/inventory/update/count/test', {
       item_id,
       quantity,
     }),
