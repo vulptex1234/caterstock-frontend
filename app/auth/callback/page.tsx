@@ -27,10 +27,20 @@ function AuthCallbackContent() {
         }
 
         // バックエンドのコールバックエンドポイントを呼び出し
-        const response = await authAPI.lineCallback(code, state || undefined);
+        const response = await fetch(
+          `/api/v1/auth/line/callback?code=${code}${
+            state ? `&state=${state}` : ''
+          }`
+        );
+
+        if (!response.ok) {
+          throw new Error('Authentication failed');
+        }
+
+        const data = await response.json();
 
         // トークンをCookieに保存
-        Cookies.set('access_token', response.data.access_token, {
+        Cookies.set('access_token', data.access_token, {
           expires: 7, // 7日間有効
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
