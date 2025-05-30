@@ -103,40 +103,45 @@ export interface Token {
 
 // API関数
 export const authAPI = {
-  getLineAuthUrl: () => api.get<{ auth_url: string }>('/auth/line/auth-url'),
+  getLineAuthUrl: () =>
+    api.get<{ auth_url: string }>('/api/v1/auth/line/auth-url'),
   lineCallback: (code: string, state?: string) =>
-    api.post<Token>('/auth/line/callback', { code, state }),
+    api.post<Token>('/api/v1/auth/line/callback', { code, state }),
 };
 
 export const inventoryAPI = {
-  getStatus: () => api.get<InventoryStatus[]>('/inventory/status'),
+  getStatus: () => api.get<InventoryStatus[]>('/api/v1/inventory/status'),
   updateQuantityManagement: (item_id: number, status_level: StatusLevel) =>
-    api.post<InventoryLog>('/inventory/update/quantity', {
+    api.post<InventoryLog>('/api/v1/inventory/update/quantity', {
       item_id,
       status_level,
     }),
   updateCountManagement: (item_id: number, quantity: number) =>
-    api.post<InventoryLog>('/inventory/update/count', { item_id, quantity }),
+    api.post<InventoryLog>('/api/v1/inventory/update/count', {
+      item_id,
+      quantity,
+    }),
   getHistory: (item_id?: number, limit = 100) =>
-    api.get<InventoryLog[]>('/inventory/history', {
+    api.get<InventoryLog[]>('/api/v1/inventory/history', {
       params: { item_id, limit },
     }),
-  getItems: () => api.get<Item[]>('/inventory/items'),
+  getItems: () => api.get<Item[]>('/api/v1/inventory/items'),
   getItemsByCategory: (category: ItemCategory) =>
-    api.get<Item[]>(`/inventory/items/category/${category}`),
+    api.get<Item[]>(`/api/v1/inventory/items/category/${category}`),
   createItem: (item: Omit<Item, 'id'>) =>
-    api.post<Item>('/inventory/items', item),
+    api.post<Item>('/api/v1/inventory/items', item),
 
   // 開発用：認証なしエンドポイント
-  getStatusTest: () => api.get<InventoryStatus[]>('/inventory/status/test'),
-  getItemsTest: () => api.get<Item[]>('/inventory/items/test'),
+  getStatusTest: () =>
+    api.get<InventoryStatus[]>('/api/v1/inventory/status/test'),
+  getItemsTest: () => api.get<Item[]>('/api/v1/inventory/items/test'),
   updateQuantityManagementTest: (item_id: number, status_level: StatusLevel) =>
-    api.post<InventoryLog>('/inventory/update/quantity/test', {
+    api.post<InventoryLog>('/api/v1/inventory/update/quantity/test', {
       item_id,
       status_level,
     }),
   updateCountManagementTest: (item_id: number, quantity: number) =>
-    api.post<InventoryLog>('/inventory/update/count/test', {
+    api.post<InventoryLog>('/api/v1/inventory/update/count/test', {
       item_id,
       quantity,
     }),
