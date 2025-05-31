@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { inventoryAPI, InventoryStatus, Item } from '@/lib/api';
+import { inventoryAPI, InventoryStatus, Item, Drink } from '@/lib/api';
 import InventoryTable from '@/components/InventoryTable';
 import InventoryUpdateForm from '@/components/InventoryUpdateForm';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import Cookies from 'js-cookie';
 export default function DashboardPage() {
   const [inventoryData, setInventoryData] = useState<InventoryStatus[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [drinks, setDrinks] = useState<Drink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -28,13 +29,16 @@ export default function DashboardPage() {
       const token = Cookies.get('access_token');
       const isDemo = token === 'demo-token';
 
-      const [inventoryResponse, itemsResponse] = await Promise.all([
-        isDemo ? inventoryAPI.getStatusTest() : inventoryAPI.getStatus(),
-        isDemo ? inventoryAPI.getItemsTest() : inventoryAPI.getItems(),
-      ]);
+      const [inventoryResponse, itemsResponse, drinksResponse] =
+        await Promise.all([
+          isDemo ? inventoryAPI.getStatusTest() : inventoryAPI.getStatus(),
+          isDemo ? inventoryAPI.getItemsTest() : inventoryAPI.getItems(),
+          inventoryAPI.getDrinks(),
+        ]);
 
       setInventoryData(inventoryResponse.data);
       setItems(itemsResponse.data);
+      setDrinks(drinksResponse.data);
       setError(null);
     } catch (err) {
       console.error('Failed to fetch data:', err);
@@ -181,7 +185,11 @@ export default function DashboardPage() {
 
           {/* 在庫更新フォーム */}
           <div className="lg:col-span-1">
-            <InventoryUpdateForm items={items} onUpdate={handleRefresh} />
+            <InventoryUpdateForm
+              items={items}
+              drinks={drinks}
+              onUpdate={handleRefresh}
+            />
           </div>
         </div>
       </main>

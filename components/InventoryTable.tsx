@@ -23,17 +23,29 @@ export default function InventoryTable({
   isLoading,
 }: InventoryTableProps) {
   const [filter, setFilter] = useState<
-    'all' | 'low' | 'high' | 'supplies' | 'food' | 'equipment'
+    'all' | 'low' | 'high' | 'supplies' | 'food' | 'equipment' | 'drinks'
   >('all');
 
   const filteredData = inventoryData.filter((item) => {
     if (filter === 'all') return true;
     if (filter === 'low' || filter === 'high') return item.status === filter;
     if (filter === 'supplies')
-      return item.item.category === ItemCategory.SUPPLIES;
-    if (filter === 'food') return item.item.category === ItemCategory.FOOD;
+      return (
+        item.item?.category === ItemCategory.SUPPLIES ||
+        item.drink?.category === ItemCategory.SUPPLIES
+      );
+    if (filter === 'food')
+      return (
+        item.item?.category === ItemCategory.FOOD ||
+        item.drink?.category === ItemCategory.FOOD
+      );
     if (filter === 'equipment')
-      return item.item.category === ItemCategory.EQUIPMENT;
+      return (
+        item.item?.category === ItemCategory.EQUIPMENT ||
+        item.drink?.category === ItemCategory.EQUIPMENT
+      );
+    if (filter === 'drinks')
+      return item.drink?.category === ItemCategory.DRINKS;
     return true;
   });
 
@@ -45,15 +57,20 @@ export default function InventoryTable({
         return '量管理の食品';
       case ItemCategory.EQUIPMENT:
         return '個数管理';
+      case ItemCategory.DRINKS:
+        return '飲み物';
       default:
         return '不明';
     }
   };
 
-  const getStatusDisplayValue = (item: InventoryStatus) => {
-    if (item.item.inventory_type === InventoryType.QUANTITY_MANAGEMENT) {
+  const getStatusDisplayValue = (status: InventoryStatus) => {
+    const target = status.item || status.drink;
+    if (!target) return '不明';
+
+    if (target.inventory_type === InventoryType.QUANTITY_MANAGEMENT) {
       // 量管理の場合
-      switch (item.current_status) {
+      switch (status.current_status) {
         case StatusLevel.HIGH:
           return '多い';
         case StatusLevel.SUFFICIENT:
@@ -65,7 +82,7 @@ export default function InventoryTable({
       }
     } else {
       // 個数管理の場合
-      return item.current_quantity?.toString() || '0';
+      return status.current_quantity?.toString() || '0';
     }
   };
 
@@ -116,6 +133,16 @@ export default function InventoryTable({
               什器
             </button>
             <button
+              onClick={() => setFilter('drinks')}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                filter === 'drinks'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              飲み物
+            </button>
+            <button
               onClick={() => setFilter('low')}
               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                 filter === 'low'
@@ -151,75 +178,62 @@ export default function InventoryTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                項目名
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                アイテム名
               </th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 カテゴリ
               </th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                現在の状況
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                在庫状態
               </th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                単位
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                最終更新
               </th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                ステータス
-              </th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                最終更新者
-              </th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">
-                更新日時
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                更新者
               </th>
             </tr>
           </thead>
-          <tbody>
-            {filteredData.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="text-center py-8 text-gray-500">
-                  {filter === 'all'
-                    ? '在庫データがありません'
-                    : `該当する在庫はありません`}
-                </td>
-              </tr>
-            ) : (
-              filteredData.map((item) => (
-                <tr
-                  key={item.item.id}
-                  className="border-b border-gray-100 hover:bg-gray-50"
-                >
-                  <td className="py-4 px-4 font-medium text-gray-900">
-                    {item.item.name}
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredData.map((status, index) => {
+              const target = status.item || status.drink;
+              if (!target) return null;
+
+              return (
+                <tr key={`${target.id}-${index}`}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {target.name}
+                    </div>
+                    <div className="text-sm text-gray-500">{target.unit}</div>
                   </td>
-                  <td className="py-4 px-4 text-gray-600 text-sm">
-                    {getCategoryText(item.item.category)}
-                  </td>
-                  <td className="py-4 px-4 text-gray-700 text-lg font-semibold">
-                    {getStatusDisplayValue(item)}
-                  </td>
-                  <td className="py-4 px-4 text-gray-600">{item.item.unit}</td>
-                  <td className="py-4 px-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                        item.status
-                      )}`}
-                    >
-                      {getStatusText(item.status)}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                      {getCategoryText(target.category)}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-gray-700">
-                    {item.updated_by_name}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                        status.status
+                      )}`}
+                    >
+                      {getStatusDisplayValue(status)}
+                    </span>
                   </td>
-                  <td className="py-4 px-4 text-gray-600 text-sm">
-                    {formatDateTime(item.last_updated)}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {formatDateTime(status.last_updated)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {status.updated_by_name}
                   </td>
                 </tr>
-              ))
-            )}
+              );
+            })}
           </tbody>
         </table>
       </div>

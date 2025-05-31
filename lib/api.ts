@@ -53,6 +53,7 @@ export enum ItemCategory {
   SUPPLIES = 'supplies', // 量管理の備品
   FOOD = 'food', // 量管理の食品
   EQUIPMENT = 'equipment', // 個数管理
+  DRINKS = 'drinks', // 飲み物
 }
 
 export enum InventoryType {
@@ -76,8 +77,19 @@ export interface Item {
   threshold_high?: number;
 }
 
+export interface Drink {
+  id: number;
+  name: string;
+  unit: string;
+  category: ItemCategory;
+  inventory_type: InventoryType;
+  threshold_low?: number;
+  threshold_high?: number;
+}
+
 export interface InventoryStatus {
-  item: Item;
+  item?: Item;
+  drink?: Drink;
   current_quantity?: number; // 個数管理のみ
   current_status?: StatusLevel; // 量管理のみ
   last_updated: string;
@@ -143,6 +155,25 @@ export const inventoryAPI = {
   updateCountManagementTest: (item_id: number, quantity: number) =>
     api.post<InventoryLog>('/api/v1/inventory/update/count/test', {
       item_id,
+      quantity,
+    }),
+
+  getDrinks: () => api.get<Drink[]>('/api/v1/inventory/drinks'),
+  getDrinksByCategory: (category: ItemCategory) =>
+    api.get<Drink[]>(`/api/v1/inventory/drinks/category/${category}`),
+  createDrink: (drink: Omit<Drink, 'id'>) =>
+    api.post<Drink>('/api/v1/inventory/drinks', drink),
+  updateDrinkQuantityManagement: (
+    drink_id: number,
+    status_level: StatusLevel
+  ) =>
+    api.post<InventoryLog>('/api/v1/inventory/drinks/update/quantity', {
+      drink_id,
+      status_level,
+    }),
+  updateDrinkCountManagement: (drink_id: number, quantity: number) =>
+    api.post<InventoryLog>('/api/v1/inventory/drinks/update/count', {
+      drink_id,
       quantity,
     }),
 };
