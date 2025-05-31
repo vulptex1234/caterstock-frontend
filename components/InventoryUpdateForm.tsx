@@ -88,11 +88,16 @@ export default function InventoryUpdateForm({
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="target-type"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             更新対象
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-2" id="target-type" role="radiogroup">
             <button
+              role="radio"
+              aria-checked={selectedType === 'item'}
               onClick={() => {
                 setSelectedType('item');
                 setSelectedId(0);
@@ -106,6 +111,8 @@ export default function InventoryUpdateForm({
               商品
             </button>
             <button
+              role="radio"
+              aria-checked={selectedType === 'drink'}
               onClick={() => {
                 setSelectedType('drink');
                 setSelectedId(0);
@@ -186,11 +193,16 @@ export default function InventoryUpdateForm({
         ) : (
           selectedTarget && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="status-level"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 在庫状態
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2" id="status-level" role="radiogroup">
                 <button
+                  role="radio"
+                  aria-checked={statusLevel === StatusLevel.LOW}
                   onClick={() => setStatusLevel(StatusLevel.LOW)}
                   className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                     statusLevel === StatusLevel.LOW
@@ -201,6 +213,8 @@ export default function InventoryUpdateForm({
                   少ない
                 </button>
                 <button
+                  role="radio"
+                  aria-checked={statusLevel === StatusLevel.SUFFICIENT}
                   onClick={() => setStatusLevel(StatusLevel.SUFFICIENT)}
                   className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                     statusLevel === StatusLevel.SUFFICIENT
@@ -211,6 +225,8 @@ export default function InventoryUpdateForm({
                   十分
                 </button>
                 <button
+                  role="radio"
+                  aria-checked={statusLevel === StatusLevel.HIGH}
                   onClick={() => setStatusLevel(StatusLevel.HIGH)}
                   className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                     statusLevel === StatusLevel.HIGH
