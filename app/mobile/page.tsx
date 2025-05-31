@@ -74,7 +74,10 @@ export default function MobilePage() {
   };
 
   const getStatusDisplayValue = (item: InventoryStatus) => {
-    if (item.item.inventory_type === InventoryType.QUANTITY_MANAGEMENT) {
+    const target = item.item || item.drink;
+    if (!target) return '不明';
+
+    if (target.inventory_type === InventoryType.QUANTITY_MANAGEMENT) {
       // 量管理の場合
       switch (item.current_status) {
         case StatusLevel.HIGH:
@@ -96,11 +99,14 @@ export default function MobilePage() {
   const filteredData = inventoryData.filter((item) => {
     if (filter === 'all') return true;
     if (filter === 'low' || filter === 'high') return item.status === filter;
-    if (filter === 'supplies')
-      return item.item.category === ItemCategory.SUPPLIES;
-    if (filter === 'food') return item.item.category === ItemCategory.FOOD;
+
+    const target = item.item || item.drink;
+    if (!target) return false;
+
+    if (filter === 'supplies') return target.category === ItemCategory.SUPPLIES;
+    if (filter === 'food') return target.category === ItemCategory.FOOD;
     if (filter === 'equipment')
-      return item.item.category === ItemCategory.EQUIPMENT;
+      return target.category === ItemCategory.EQUIPMENT;
     return true;
   });
 
@@ -110,15 +116,18 @@ export default function MobilePage() {
     low: inventoryData.filter((item) => item.status === 'low').length,
     high: inventoryData.filter((item) => item.status === 'high').length,
     normal: inventoryData.filter((item) => item.status === 'normal').length,
-    supplies: inventoryData.filter(
-      (item) => item.item.category === ItemCategory.SUPPLIES
-    ).length,
-    food: inventoryData.filter(
-      (item) => item.item.category === ItemCategory.FOOD
-    ).length,
-    equipment: inventoryData.filter(
-      (item) => item.item.category === ItemCategory.EQUIPMENT
-    ).length,
+    supplies: inventoryData.filter((item) => {
+      const target = item.item || item.drink;
+      return target?.category === ItemCategory.SUPPLIES;
+    }).length,
+    food: inventoryData.filter((item) => {
+      const target = item.item || item.drink;
+      return target?.category === ItemCategory.FOOD;
+    }).length,
+    equipment: inventoryData.filter((item) => {
+      const target = item.item || item.drink;
+      return target?.category === ItemCategory.EQUIPMENT;
+    }).length,
   };
 
   const getFilterText = (filterType: FilterType) => {
@@ -325,51 +334,60 @@ export default function MobilePage() {
                 </p>
               </div>
             ) : (
-              filteredData.map((item) => (
-                <div key={item.item.id} className="p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-900 text-lg mb-1">
-                        {item.item.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-1">
-                        {getCategoryText(item.item.category)}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        更新: {item.updated_by_name}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-baseline space-x-1 mb-1">
-                        <span className="text-3xl font-bold text-gray-900">
-                          {getStatusDisplayValue(item)}
-                        </span>
-                        <span className="text-sm text-gray-600">
-                          {item.item.unit}
+              filteredData.map((item) => {
+                const target = item.item || item.drink;
+                if (!target) return null;
+
+                return (
+                  <div key={`${target.id}-${target.name}`} className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-900 text-lg mb-1">
+                          {target.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-1">
+                          {getCategoryText(target.category)}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          更新: {item.updated_by_name}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-baseline space-x-1 mb-1">
+                          <span className="text-3xl font-bold text-gray-900">
+                            {getStatusDisplayValue(item)}
+                          </span>
+                          <span className="text-sm text-gray-600">
+                            {target.unit}
+                          </span>
+                        </div>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                            item.status
+                          )}`}
+                        >
+                          {getStatusText(item.status)}
                         </span>
                       </div>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                          item.status
-                        )}`}
-                      >
-                        {getStatusText(item.status)}
-                      </span>
                     </div>
-                  </div>
 
-                  {/* クイック更新ボタン */}
-                  <Button
-                    onClick={() =>
-                      router.push(`/mobile/update?item=${item.item.id}`)
-                    }
-                    variant="outline"
-                    className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
-                  >
-                    この項目を更新する
-                  </Button>
-                </div>
-              ))
+                    {/* クイック更新ボタン */}
+                    <Button
+                      onClick={() =>
+                        router.push(
+                          `/mobile/update?${item.item ? 'item' : 'drink'}=${
+                            target.id
+                          }`
+                        )
+                      }
+                      variant="outline"
+                      className="w-full border-blue-200 text-blue-600 hover:bg-blue-50"
+                    >
+                      この項目を更新する
+                    </Button>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
